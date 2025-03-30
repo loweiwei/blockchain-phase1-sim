@@ -23,4 +23,16 @@ class Transaction:
             tx_data += o.address
             tx_data += str(o.amount)
         return hashlib.sha256(tx_data.encode()).hexdigest()
+    
+    @classmethod
+    def create_with_change(cls, sender_utxo, send_amount, sender_address, recipient_address):
+        if send_amount > sender_utxo.amount:
+            raise ValueError("transcation fail(amount aren't enough)")
+    
+        inputs = [sender_utxo]
+        outputs = [UTXO(txid="", index=0, amount=send_amount, address=recipient_address)]
 
+        change = sender_utxo.amount - send_amount
+        if change > 0:
+            outputs.append(UTXO(txid="", index=1, amount=change, address=sender_address))
+        return cls(inputs=inputs, outputs=outputs)
